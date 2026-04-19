@@ -43,4 +43,16 @@ public class TicketService {
 
         return ticket;
     }
+
+    public void confirmTicket(Long ticketId) {
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        ticket.setStatus(TicketStatus.CONFIRMED);
+
+        ticketRepository.save(ticket);
+
+        System.out.println("Ticket with ID: [" + ticketId + "] confirmed");
+    }
 }
