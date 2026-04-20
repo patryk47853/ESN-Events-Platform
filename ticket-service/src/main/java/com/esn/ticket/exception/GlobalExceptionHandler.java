@@ -25,4 +25,13 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
     }
+
+    @ExceptionHandler(TicketNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleTicketNotFound(TicketNotFoundException ex) {
+        return new ErrorResponse(
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+    }
 }
