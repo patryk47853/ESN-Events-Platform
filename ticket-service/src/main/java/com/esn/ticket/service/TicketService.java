@@ -6,10 +6,13 @@ import com.esn.ticket.entity.Ticket;
 import com.esn.ticket.entity.TicketStatus;
 import com.esn.ticket.event.TicketCreatedEvent;
 import com.esn.ticket.exception.EventNotFoundException;
+import com.esn.ticket.exception.TicketNotFoundException;
 import com.esn.ticket.kafka.TicketProducer;
 import com.esn.ticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -47,12 +50,16 @@ public class TicketService {
     public void confirmTicket(Long ticketId) {
 
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+                .orElseThrow(() -> new TicketNotFoundException(ticketId));
 
         ticket.setStatus(TicketStatus.CONFIRMED);
 
         ticketRepository.save(ticket);
 
         System.out.println("Ticket with ID: [" + ticketId + "] confirmed");
+    }
+
+    public List<Ticket> getTicketsByEvent(Long eventId) {
+        return ticketRepository.findByEventId(eventId);
     }
 }
