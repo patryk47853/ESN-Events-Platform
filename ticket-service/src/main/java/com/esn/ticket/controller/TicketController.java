@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/tickets")
 @RequiredArgsConstructor
@@ -17,5 +19,10 @@ public class TicketController {
     @PostMapping
     public Ticket createTicket(@Valid @RequestBody CreateTicketRequest request) {
         return ticketService.createTicket(request);
+    }
+
+    @GetMapping("/by-event/{eventId}")
+    public List<Ticket> getTicketsByEvent(@PathVariable Long eventId) {
+        return ticketService.getTicketsByEvent(eventId);
     }
 }
