@@ -4,11 +4,13 @@ import com.esn.ticket.config.EventClient;
 import com.esn.ticket.dto.CreateTicketRequest;
 import com.esn.ticket.entity.Ticket;
 import com.esn.ticket.entity.TicketStatus;
+import com.esn.ticket.event.TicketCancelledEvent;
 import com.esn.ticket.event.TicketCreatedEvent;
 import com.esn.ticket.exception.EventNotFoundException;
 import com.esn.ticket.exception.TicketNotFoundException;
 import com.esn.ticket.kafka.TicketProducer;
 import com.esn.ticket.repository.TicketRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class TicketService {
     private final EventClient eventClient;
     private final TicketProducer ticketProducer;
 
+    @Transactional
     public Ticket createTicket(CreateTicketRequest request) {
 
         if (!eventClient.eventExists(request.getEventId())) {
@@ -47,6 +50,7 @@ public class TicketService {
         return ticket;
     }
 
+    @Transactional
     public void confirmTicket(Long ticketId) {
 
         Ticket ticket = ticketRepository.findById(ticketId)
@@ -61,5 +65,26 @@ public class TicketService {
 
     public List<Ticket> getTicketsByEvent(Long eventId) {
         return ticketRepository.findByEventId(eventId);
+    }
+
+    @Transactional
+    public void cancelTicket(Long ticketId, String reason) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException(ticketId));
+
+        if (ticket.getStatus() == TicketStatus.CANCELLED) {
+            throw new IllegalStateException("Ticket is already cancelled");
+        }
+
+        ticket.setStatus(TicketStatus.CANCELLED);
+
+        ticketProducer.sendTicketCancelled(
+                TicketCancelledEvent.builder()
+                        .ticketId(ticket.getId())
+                        .eventId(ticket.getEventId())
+                        .userId(ticket.getUserId())
+                        .reason(reason)
+                        .build()
+        );
     }
 }
