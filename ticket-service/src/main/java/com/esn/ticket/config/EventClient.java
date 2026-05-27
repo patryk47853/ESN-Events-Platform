@@ -10,10 +10,12 @@ public class EventClient {
 
     private final RestTemplate restTemplate;
 
+    private static final String EVENT_SERVICE_URL = "http://localhost:8081/api/events/";
+
     public boolean eventExists(Long eventId) {
         try {
             restTemplate.getForObject(
-                    "http://localhost:8081/events/" + eventId,
+                    EVENT_SERVICE_URL + eventId,
                     Object.class
             );
             return true;
