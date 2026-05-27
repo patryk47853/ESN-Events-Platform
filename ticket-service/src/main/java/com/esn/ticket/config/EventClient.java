@@ -27,4 +27,8 @@ public class EventClient {
     public void reserveSeat(Long eventId) {
         restTemplate.put(EVENT_SERVICE_URL + eventId + "/reserve", null);
     }
+
+    public void releaseSeat(Long eventId) {
+        restTemplate.put(EVENT_SERVICE_URL + eventId + "/release", null);
+    }
 }
