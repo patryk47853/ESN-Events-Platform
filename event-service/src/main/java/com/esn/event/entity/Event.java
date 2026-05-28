@@ -30,7 +30,13 @@ public class Event {
 
     private Integer capacity;
 
+    @Builder.Default
+    private Integer bookedSeats = 0;
+
     private Double price;
 
     private Boolean isFree;
+
+    @Version
+    private Long version;
 }
