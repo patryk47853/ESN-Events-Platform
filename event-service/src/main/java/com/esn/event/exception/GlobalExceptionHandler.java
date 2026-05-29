@@ -19,6 +19,15 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(EventFullException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleEventFull(EventFullException ex) {
+        return new ErrorResponse(
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGeneric(Exception ex) {
