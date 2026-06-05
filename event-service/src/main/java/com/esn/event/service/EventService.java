@@ -2,8 +2,10 @@ package com.esn.event.service;
 
 import com.esn.event.dto.CreateEventRequest;
 import com.esn.event.entity.Event;
+import com.esn.event.exception.EventFullException;
 import com.esn.event.exception.EventNotFoundException;
 import com.esn.event.repository.EventRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,5 +48,18 @@ public class EventService {
     public Event getEventById(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
+    }
+
+    @Transactional
+    public void reserveSeat(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
+
+        if (event.getBookedSeats() >= event.getCapacity()) {
+            throw new EventFullException("No seats available for event: " + event.getTitle());
+        }
+
+        event.setBookedSeats(event.getBookedSeats() + 1);
+        eventRepository.save(event);
     }
 }
