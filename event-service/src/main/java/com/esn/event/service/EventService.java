@@ -62,4 +62,15 @@ public class EventService {
         event.setBookedSeats(event.getBookedSeats() + 1);
         eventRepository.save(event);
     }
+
+    @Transactional
+    public void releaseSeat(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
+
+        if (event.getBookedSeats() > 0) {
+            event.setBookedSeats(event.getBookedSeats() - 1);
+            eventRepository.save(event);
+        }
+    }
 }
