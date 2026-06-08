@@ -50,4 +50,25 @@ class EventServiceTest {
         assertEquals(0.0, event.getPrice(), "Price must be exactly 0.0 for free events!");
         verify(eventRepository, times(1)).save(any(Event.class));
     }
+
+    @Test
+    void shouldReserveSeatSuccessfully() {
+        // Given
+        Long eventId = 1L;
+        Event event = Event.builder()
+                .id(eventId)
+                .title("Krakow Trip")
+                .capacity(50)
+                .bookedSeats(10)
+                .build();
+
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        // When
+        eventService.reserveSeat(eventId);
+
+        // Then
+        assertEquals(11, event.getBookedSeats());
+        verify(eventRepository, times(1)).save(event);
+    }
 }
