@@ -57,6 +57,7 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(ticketId));
 
         ticket.setStatus(TicketStatus.CONFIRMED);
+        ticket.setTicketToken("ESN-QR-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
         ticketRepository.save(ticket);
 
