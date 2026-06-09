@@ -71,4 +71,22 @@ class EventServiceTest {
         assertEquals(11, event.getBookedSeats());
         verify(eventRepository, times(1)).save(event);
     }
+
+    @Test
+    void shouldThrowExceptionWhenEventIsFull() {
+        // Given
+        Long eventId = 1L;
+        Event event = Event.builder()
+                .id(eventId)
+                .title("Krakow Trip")
+                .capacity(50)
+                .bookedSeats(50) // full event
+                .build();
+
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        // When & Then
+        assertThrows(EventFullException.class, () -> eventService.reserveSeat(eventId));
+        verify(eventRepository, never()).save(any(Event.class));
+    }
 }
