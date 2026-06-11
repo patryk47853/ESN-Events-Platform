@@ -2,6 +2,7 @@ package com.esn.ticket.service;
 
 import com.esn.ticket.config.EventClient;
 import com.esn.ticket.dto.CreateTicketRequest;
+import com.esn.ticket.dto.TicketValidationResponse;
 import com.esn.ticket.entity.Ticket;
 import com.esn.ticket.entity.TicketStatus;
 import com.esn.ticket.event.TicketCancelledEvent;
@@ -87,5 +88,28 @@ public class TicketService {
                         .reason(reason)
                         .build()
         );
+    }
+
+    public TicketValidationResponse validateTicket(String token) {
+        return ticketRepository.findByTicketToken(token)
+                .map(ticket -> {
+                    if (ticket.getStatus() != TicketStatus.CONFIRMED) {
+                        return TicketValidationResponse.builder()
+                                .status("INVALID")
+                                .message("Ticket is not paid! Current status: " + ticket.getStatus())
+                                .build();
+                    }
+
+                    return TicketValidationResponse.builder()
+                            .status("VALID")
+                            .message("Ticket is valid. Welcome aboard!")
+                            .userId(ticket.getUserId())
+                            .eventId(ticket.getEventId())
+                            .build();
+                })
+                .orElse(TicketValidationResponse.builder()
+                        .status("INVALID")
+                        .message("Ticket token does not exist!")
+                        .build());
     }
 }
