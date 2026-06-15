@@ -38,4 +38,9 @@ public class Ticket {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(unique = true)
+    private String ticketToken;
+
+    private boolean isUsed = false;
 }
