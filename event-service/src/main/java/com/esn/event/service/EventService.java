@@ -91,4 +91,20 @@ public class EventService {
                 .potentialRevenue(potentialRevenue)
                 .build();
     }
+
+    public Event updateEventPrice(Long eventId, double newPrice) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
+
+        if (Boolean.TRUE.equals(event.getIsFree())) {
+            throw new IllegalStateException("Cannot change price of a FREE event! Change 'isFree' status first.");
+        }
+
+        if (newPrice < 0) {
+            throw new IllegalArgumentException("Price cannot be negative!");
+        }
+
+        event.setPrice(newPrice);
+        return eventRepository.save(event);
+    }
 }
