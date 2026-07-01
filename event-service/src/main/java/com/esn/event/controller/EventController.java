@@ -37,4 +37,9 @@ public class EventController {
     public ResponseEntity<EventFinancialReport> getFinancialReport(@PathVariable Long id) {
         return ResponseEntity.ok(eventService.getFinancialReport(id));
     }
+
+    @PatchMapping("/{id}/price")
+    public ResponseEntity<Event> updateEventPrice(@PathVariable Long id, @RequestParam double price) {
+        return ResponseEntity.ok(eventService.updateEventPrice(id, price));
+    }
 }
