@@ -40,6 +40,8 @@ public class TicketService {
                         .build()
         );
 
+        eventClient.reserveSeat(request.getEventId());
+
         ticketProducer.sendTicketCreated(
                 TicketCreatedEvent.builder()
                         .ticketId(ticket.getId())
@@ -56,6 +58,14 @@ public class TicketService {
 
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new TicketNotFoundException(ticketId));
+
+        if (ticket.getStatus() != TicketStatus.PENDING) {
+            throw new IllegalStateException(
+                    "Only PENDING tickets can be confirmed"
+            );
+        }
+
+        ticket.setStatus(TicketStatus.CONFIRMED);
 
         ticket.setStatus(TicketStatus.CONFIRMED);
         ticket.setTicketToken("ESN-QR-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
@@ -78,7 +88,15 @@ public class TicketService {
             throw new IllegalStateException("Ticket is already cancelled");
         }
 
+        if (ticket.getStatus() == TicketStatus.CONFIRMED) {
+            throw new IllegalStateException(
+                    "Confirmed tickets cannot be cancelled"
+            );
+        }
+
         ticket.setStatus(TicketStatus.CANCELLED);
+
+        eventClient.releaseSeat(ticket.getEventId());
 
         ticketProducer.sendTicketCancelled(
                 TicketCancelledEvent.builder()
@@ -91,14 +109,26 @@ public class TicketService {
     }
 
     public TicketValidationResponse validateTicket(String token) {
+
+
         return ticketRepository.findByTicketToken(token)
                 .map(ticket -> {
+                    if (ticket.isUsed()) {
+                        return TicketValidationResponse.builder()
+                                .status("INVALID")
+                                .message("Ticket has already been used!")
+                                .build();
+                    }
+
                     if (ticket.getStatus() != TicketStatus.CONFIRMED) {
                         return TicketValidationResponse.builder()
                                 .status("INVALID")
                                 .message("Ticket is not paid! Current status: " + ticket.getStatus())
                                 .build();
                     }
+
+                    ticket.setUsed(true);
+                    ticketRepository.save(ticket);
 
                     return TicketValidationResponse.builder()
                             .status("VALID")
