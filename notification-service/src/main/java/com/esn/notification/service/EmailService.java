@@ -16,4 +16,10 @@ public class EmailService {
         log.info("Sending email to Student (ID: {}): PAYMENT CONFIRMED for ticket #{}!", userId, ticketId);
         log.info("See you at the ESN event! Here is your booking confirmation.");
     }
+
+    public void sendTicketCancelledEmail(Long userId, Long ticketId) {
+        log.info("Sending email to Student (ID: {}): Ticket #{} has been cancelled.", userId, ticketId);
+
+        log.info("Your reservation has been successfully cancelled.");
+    }
 }
