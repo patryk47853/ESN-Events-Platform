@@ -1,6 +1,7 @@
 package com.esn.notification.kafka;
 
 import com.esn.notification.event.PaymentSuccessEvent;
+import com.esn.notification.event.TicketCancelledEvent;
 import com.esn.notification.event.TicketCreatedEvent;
 import com.esn.notification.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,18 @@ public class NotificationConsumer {
             emailService.sendPaymentSuccessEmail(event.getUserId(), event.getTicketId());
         } catch (Exception e) {
             log.error("Failed to process email for successful payment of ticket ID: {}", event.getTicketId(), e);
+        }
+    }
+
+    @KafkaListener(topics = "ticket-cancelled-topic")
+    public void consumeTicketCancelled(TicketCancelledEvent event) {
+
+        log.info("Notification Service received TicketCancelledEvent for ticket ID: {}", event.getTicketId());
+
+        try {
+            emailService.sendTicketCancelledEmail(event.getUserId(), event.getTicketId());
+        } catch (Exception e) {
+            log.error("Failed to process cancellation email for ticket ID: {}", event.getTicketId(), e);
         }
     }
 }
