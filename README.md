@@ -221,26 +221,25 @@ and sends corresponding notifications.
 
 ## 🏗️ Architecture Diagram
 
-> TBD
+<img src="screenshots/architecture.png" alt="ESN Events Platform architecture diagram" align="center" width="900">
 
 ---
 
 ## 🎯 Ticket Lifecycle Workflow
 
-> TBD
+<img src="screenshots/ticket-lifecycle-workflow.png" alt="Ticket lifecycle workflow diagram" align="center" width="300">
 
 ---
 
 ## 📡 Swagger - Event Service
 
-> TBD
+<img src="screenshots/swagger-event-service.png" alt="Swagger documentation for Event Service" align="center" width="900">
 
 ---
 
 ## 🎫 Swagger - Ticket Service
 
-> TBD
-
+<img src="screenshots/swagger-ticket-service.png" alt="Swagger documentation for Ticket Service" align="center" width="900">
 ---
 
 # <a name="testing"></a> ✅ Testing
