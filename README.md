@@ -240,6 +240,7 @@ and sends corresponding notifications.
 ## 🎫 Swagger - Ticket Service
 
 <img src="screenshots/swagger-ticket-service.png" alt="Swagger documentation for Ticket Service" align="center" width="900">
+
 ---
 
 # <a name="testing"></a> ✅ Testing
