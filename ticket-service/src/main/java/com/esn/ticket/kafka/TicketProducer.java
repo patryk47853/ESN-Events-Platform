@@ -13,10 +13,10 @@ public class TicketProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendTicketCreated(TicketCreatedEvent event) {
-        kafkaTemplate.send("ticket-created-topic", event);
+        kafkaTemplate.send(KafkaTopics.TICKET_CREATED, event);
     }
 
     public void sendTicketCancelled(TicketCancelledEvent event) {
-        kafkaTemplate.send("ticket-cancelled-topic", event);
+        kafkaTemplate.send(KafkaTopics.TICKET_CANCELLED, event);
     }
 }
