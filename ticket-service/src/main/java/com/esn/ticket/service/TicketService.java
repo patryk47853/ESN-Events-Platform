@@ -13,12 +13,14 @@ import com.esn.ticket.kafka.TicketProducer;
 import com.esn.ticket.repository.TicketRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TicketService {
 
     private final TicketRepository ticketRepository;
@@ -72,7 +74,7 @@ public class TicketService {
 
         ticketRepository.save(ticket);
 
-        System.out.println("Ticket with ID: [" + ticketId + "] confirmed");
+        log.info("Ticket with ID: [{}] confirmed", ticketId);
     }
 
     public List<Ticket> getTicketsByEvent(Long eventId) {
