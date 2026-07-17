@@ -372,7 +372,6 @@ notification-service
 - [ ] API Gateway
 - [ ] Service Discovery
 - [ ] SMTP email integration
-- [ ] Real payment provider integration
 - [ ] Centralized logging
 - [ ] Monitoring and observability
 - [ ] CI/CD pipeline
