@@ -1,18 +1,20 @@
 package com.esn.ticket.kafka;
 
 import com.esn.ticket.event.TicketCreatedEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class TicketConsumer {
 
-    @KafkaListener(topics = "ticket-created-topic", groupId = "ticket-group")
+    @KafkaListener(topics = KafkaTopics.TICKET_CREATED, groupId = KafkaGroups.TICKET_SERVICE)
     public void consume(TicketCreatedEvent event) {
 
-        System.out.println("Received event from Kafka:");
-        System.out.println("Ticket ID: " + event.getTicketId());
-        System.out.println("Event ID: " + event.getEventId());
-        System.out.println("User ID: " + event.getUserId());
+        log.info("Received event from Kafka:");
+        log.info("Ticket ID: {}", event.getTicketId());
+        log.info("Event ID: {}", event.getEventId());
+        log.info("User ID: {}", event.getUserId());
     }
 }
