@@ -370,9 +370,7 @@ notification-service
 - [ ] Kubernetes deployment
 - [ ] JWT authentication and authorization
 - [ ] API Gateway
-- [ ] Service Discovery
 - [ ] SMTP email integration
-- [ ] Centralized logging
 - [ ] Monitoring and observability
 - [ ] CI/CD pipeline
 - [ ] Integration tests
