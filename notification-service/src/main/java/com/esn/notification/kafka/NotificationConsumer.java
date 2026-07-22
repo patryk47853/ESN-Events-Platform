@@ -16,7 +16,7 @@ public class NotificationConsumer {
 
     private final EmailService emailService;
 
-    @KafkaListener(topics = "ticket-created-topic")
+    @KafkaListener(topics = KafkaTopics.TICKET_CREATED)
     public void consumeTicketCreated(TicketCreatedEvent event) {
         log.info("Notification Service received TicketCreatedEvent for ticket ID: {}", event.getTicketId());
         try {
@@ -26,7 +26,7 @@ public class NotificationConsumer {
         }
     }
 
-    @KafkaListener(topics = "payment-success-topic")
+    @KafkaListener(topics = KafkaTopics.PAYMENT_SUCCESS)
     public void consumePaymentSuccess(PaymentSuccessEvent event) {
         log.info("Notification Service received PaymentSuccessEvent for ticket ID: {}", event.getTicketId());
         try {
@@ -36,7 +36,7 @@ public class NotificationConsumer {
         }
     }
 
-    @KafkaListener(topics = "ticket-cancelled-topic")
+    @KafkaListener(topics = KafkaTopics.TICKET_CANCELLED)
     public void consumeTicketCancelled(TicketCancelledEvent event) {
 
         log.info("Notification Service received TicketCancelledEvent for ticket ID: {}", event.getTicketId());
