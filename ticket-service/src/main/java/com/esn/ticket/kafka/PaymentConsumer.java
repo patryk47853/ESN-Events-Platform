@@ -15,7 +15,7 @@ public class PaymentConsumer {
 
     private final TicketService ticketService;
 
-    @KafkaListener(topics = "payment-success-topic", groupId = "ticket-service-group")
+    @KafkaListener(topics = KafkaTopics.PAYMENT_SUCCESS, groupId = KafkaGroups.TICKET_SERVICE)
     public void consume(PaymentSuccessEvent event) {
         log.info("Payment received for ticket ID: {}", event.getTicketId());
 
@@ -27,7 +27,7 @@ public class PaymentConsumer {
         }
     }
 
-    @KafkaListener(topics = "payment-failed-topic", groupId = "ticket-service-group")
+    @KafkaListener(topics = KafkaTopics.PAYMENT_FAILED, groupId = KafkaGroups.TICKET_SERVICE)
     public void consumePaymentFailed(PaymentFailedEvent event) {
         log.info("Received payment failed event for ticket ID: {}. Reason: {}", event.getTicketId(), event.getReason());
 
