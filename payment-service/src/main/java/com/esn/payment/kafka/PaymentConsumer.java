@@ -15,7 +15,7 @@ public class PaymentConsumer {
 
     private final PaymentProducer paymentProducer;
 
-    @KafkaListener(topics = "ticket-created-topic", groupId = "payment-group")
+    @KafkaListener(topics = KafkaTopics.TICKET_CREATED, groupId = KafkaGroups.PAYMENT_SERVICE)
     public void consume(TicketCreatedEvent event) {
 
         log.info("Processing payment for ticket: {}", event.getTicketId());
@@ -23,11 +23,10 @@ public class PaymentConsumer {
         // TODO:
         // This is a temporary mock payment implementation.
         // In production this should be replaced with a real
-        // payment provider integration (Stripe, PayPal, etc.)
-        boolean paymentOk = true;
+        // payment provider integration (Bank Transfer, PayPal, etc.)
+        boolean paymentSuccessful = true;
 
-        if (paymentOk) {
-
+        if (paymentSuccessful) {
             paymentProducer.sendPaymentSuccess(
                     PaymentSuccessEvent.builder()
                             .ticketId(event.getTicketId())
@@ -36,7 +35,6 @@ public class PaymentConsumer {
             );
 
         } else {
-
             paymentProducer.sendPaymentFailed(
                     PaymentFailedEvent.builder()
                             .ticketId(event.getTicketId())
