@@ -1,6 +1,7 @@
 package com.esn.ticket.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -10,12 +11,13 @@ public class EventClient {
 
     private final RestTemplate restTemplate;
 
-    private static final String EVENT_SERVICE_URL = "http://localhost:8081/api/events/";
+    @Value("${event-service.url}")
+    private String eventServiceUrl;
 
     public boolean eventExists(Long eventId) {
         try {
             restTemplate.getForObject(
-                    EVENT_SERVICE_URL + eventId,
+                    eventServiceUrl + eventId,
                     Object.class
             );
             return true;
@@ -25,10 +27,10 @@ public class EventClient {
     }
 
     public void reserveSeat(Long eventId) {
-        restTemplate.put(EVENT_SERVICE_URL + eventId + "/reserve", null);
+        restTemplate.put(eventServiceUrl + eventId + "/reserve", null);
     }
 
     public void releaseSeat(Long eventId) {
-        restTemplate.put(EVENT_SERVICE_URL + eventId + "/release", null);
+        restTemplate.put(eventServiceUrl + eventId + "/release", null);
     }
 }

@@ -3,6 +3,8 @@ spring:
     url: jdbc:postgresql://localhost:5433/esn_events
     username: postgres
     password: postgres
+  event-service:
+  url: ${EVENT_SERVICE_URL:http://localhost:8081/api/events}
 
   jpa:
     hibernate:
