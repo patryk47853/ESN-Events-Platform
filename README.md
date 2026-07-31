@@ -365,14 +365,118 @@ notification-service
 
 ---
 
-# <a name="todo"></a> 📋 Future Improvements
+# <a name="todo"></a> 📋 Project Roadmap & Future Improvements
 
-- [ ] Kubernetes deployment
-- [ ] JWT authentication and authorization
-- [ ] API Gateway
-- [ ] SMTP email integration
-- [ ] Monitoring and observability
-- [ ] CI/CD pipeline
-- [ ] Integration tests
+This section tracks the current state of the project and planned improvements.  
+The project is developed incrementally, with each version introducing a specific backend, infrastructure or documentation improvement.
 
 ---
+
+## ✅ Completed Versions
+
+### v0.1 - Initial Backend Setup
+
+- Created initial microservices structure.
+- Added basic Spring Boot services:
+    - Event Service
+    - Ticket Service
+    - Payment Service
+    - Notification Service
+- Configured PostgreSQL database connection.
+- Added basic REST endpoints for event and ticket management.
+
+---
+
+### v0.2 - Event and Ticket Business Logic
+
+- Implemented event creation and event listing.
+- Added support for free and paid events.
+- Implemented ticket reservation flow.
+- Added ticket statuses:
+    - `PENDING`
+    - `CONFIRMED`
+    - `CANCELLED`
+- Added financial report endpoint for events.
+- Added optimistic locking for safer concurrent updates.
+
+---
+
+### v0.3 - Kafka-Based Communication
+
+- Added Apache Kafka integration between services.
+- Implemented event-driven communication using:
+    - `TicketCreatedEvent`
+    - `PaymentSuccessEvent`
+    - `PaymentFailedEvent`
+    - `TicketCancelledEvent`
+- Payment Service reacts to created tickets.
+- Ticket Service reacts to payment results.
+- Notification Service consumes events and sends simulated notifications.
+
+---
+
+### v0.4 - Ticket Lifecycle Improvements
+
+- Added automatic cancellation of unpaid reservations after 15 minutes.
+- Added scheduled job for expired pending tickets.
+- Added ticket token generation after successful payment.
+- Added ticket validation flow.
+- Prevented duplicate ticket usage after successful validation.
+
+---
+
+### v0.5 - Testing and API Documentation
+
+- Added unit tests for core business logic.
+- Covered selected service-layer workflows using JUnit 5 and Mockito.
+- Added Swagger/OpenAPI documentation for REST APIs.
+- Added README sections describing architecture, workflow and endpoints.
+
+---
+
+## 🚧 Planned Improvements
+
+### v0.6 - Kubernetes Deployment
+
+- [ ] Add basic Kubernetes namespace.
+- [ ] Add Deployment manifests for all microservices.
+- [ ] Add Service manifests for internal communication.
+- [ ] Add ConfigMaps for environment-specific configuration.
+- [ ] Externalise service URLs to support Kubernetes service discovery.
+
+> Basic Kubernetes manifests will be added to demonstrate how the microservices can be deployed in a container orchestration environment.  
+> The setup will include Deployments, Services and ConfigMaps.
+
+---
+
+### v0.7 - Security Layer
+
+- [ ] Add JWT authentication and authorization.
+- [ ] Protect selected endpoints based on user roles.
+- [ ] Introduce role-based access for organisers/admin users.
+
+---
+
+### v0.8 - API Gateway
+
+- [ ] Add API Gateway as a single entry point for external clients.
+- [ ] Route requests to internal microservices.
+- [ ] Prepare the project for easier frontend integration.
+
+---
+
+### v0.9 - Notification Improvements
+
+- [ ] Replace simulated notification logs with real SMTP email delivery.
+- [ ] Add configurable email templates.
+- [ ] Improve notification error handling.
+
+---
+
+### v1.0 - Production-Ready Improvements
+
+- [ ] Add monitoring and observability.
+- [ ] Add CI/CD pipeline.
+- [ ] Add integration tests.
+- [ ] Improve Docker and Kubernetes documentation.
+- [ ] Prepare final README screenshots and deployment guide.
