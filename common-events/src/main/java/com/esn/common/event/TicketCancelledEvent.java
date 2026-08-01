@@ -1,4 +1,4 @@
-package com.esn.ticket.event;
+package com.esn.common.event;
    
    import lombok.AllArgsConstructor;
    import lombok.Builder;

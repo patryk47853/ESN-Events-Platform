@@ -1,6 +1,6 @@
 package com.esn.ticket.kafka;
 
-import com.esn.ticket.event.TicketCreatedEvent;
+import com.esn.common.event.TicketCreatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;

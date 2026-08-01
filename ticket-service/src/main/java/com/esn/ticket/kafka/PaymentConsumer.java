@@ -1,7 +1,7 @@
 package com.esn.ticket.kafka;
 
-import com.esn.ticket.event.PaymentFailedEvent;
-import com.esn.ticket.event.PaymentSuccessEvent;
+import com.esn.common.event.PaymentFailedEvent;
+import com.esn.common.event.PaymentSuccessEvent;
 import com.esn.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

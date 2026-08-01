@@ -1,7 +1,7 @@
 package com.esn.ticket.kafka;
 
-import com.esn.ticket.event.TicketCancelledEvent;
-import com.esn.ticket.event.TicketCreatedEvent;
+import com.esn.common.event.TicketCancelledEvent;
+import com.esn.common.event.TicketCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;

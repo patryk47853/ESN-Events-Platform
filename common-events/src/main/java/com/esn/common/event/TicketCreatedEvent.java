@@ -1,11 +1,11 @@
-package com.esn.payment.event;
+package com.esn.common.event;
 
 import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class TicketCreatedEvent {
 

@@ -1,4 +1,4 @@
-package com.esn.payment.event;
+package com.esn.common.event;
 
 import lombok.*;
 
@@ -7,8 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PaymentSuccessEvent {
-
+public class PaymentFailedEvent {
     private Long ticketId;
     private Long userId;
+    private String reason;
 }

@@ -1,7 +1,7 @@
 package com.esn.payment.kafka;
 
-import com.esn.payment.event.PaymentFailedEvent;
-import com.esn.payment.event.PaymentSuccessEvent;
+import com.esn.common.event.PaymentFailedEvent;
+import com.esn.common.event.PaymentSuccessEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;

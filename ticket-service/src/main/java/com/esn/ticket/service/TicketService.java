@@ -1,12 +1,12 @@
 package com.esn.ticket.service;
 
+import com.esn.common.event.TicketCancelledEvent;
+import com.esn.common.event.TicketCreatedEvent;
 import com.esn.ticket.config.EventClient;
 import com.esn.ticket.dto.CreateTicketRequest;
 import com.esn.ticket.dto.TicketValidationResponse;
 import com.esn.ticket.entity.Ticket;
 import com.esn.ticket.entity.TicketStatus;
-import com.esn.ticket.event.TicketCancelledEvent;
-import com.esn.ticket.event.TicketCreatedEvent;
 import com.esn.ticket.exception.EventNotFoundException;
 import com.esn.ticket.exception.TicketNotFoundException;
 import com.esn.ticket.kafka.TicketProducer;

@@ -1,8 +1,8 @@
 package com.esn.payment.kafka;
 
-import com.esn.payment.event.PaymentFailedEvent;
-import com.esn.payment.event.TicketCreatedEvent;
-import com.esn.payment.event.PaymentSuccessEvent;
+import com.esn.common.event.PaymentFailedEvent;
+import com.esn.common.event.PaymentSuccessEvent;
+import com.esn.common.event.TicketCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -24,7 +24,8 @@ public class PaymentConsumer {
         // This is a temporary mock payment implementation.
         // In production this should be replaced with a real
         // payment provider integration (Bank Transfer, PayPal, etc.)
-        boolean paymentSuccessful = true;
+        // Right now: 50% chance for payment success
+        boolean paymentSuccessful = Math.random() > 0.5;
 
         if (paymentSuccessful) {
             paymentProducer.sendPaymentSuccess(
