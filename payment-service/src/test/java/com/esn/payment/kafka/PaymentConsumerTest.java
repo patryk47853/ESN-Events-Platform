@@ -1,7 +1,7 @@
 package com.esn.payment.kafka;
 
-import com.esn.payment.event.PaymentSuccessEvent;
-import com.esn.payment.event.TicketCreatedEvent;
+import com.esn.common.event.PaymentSuccessEvent;
+import com.esn.common.event.TicketCreatedEvent;
 import org.testng.annotations.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
