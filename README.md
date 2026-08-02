@@ -1,6 +1,6 @@
 # 🎟️ ESN Events Platform
 
-A microservices-based event management and ticketing platform built with Spring Boot, Apache Kafka and Docker
+A Kubernetes-deployed, event-driven microservices platform built with Spring Boot, Apache Kafka, PostgreSQL and Docker.
 
 ---
 
@@ -145,19 +145,35 @@ This prevents seats from being blocked indefinitely.
 ---
 
 # <a name="technologies"></a> 🔧 Technologies
-### 🚀 Backend
+
+## 🚀 Backend
 
 - Java 21
 - Spring Boot
 - Spring Data JPA
 - Hibernate
+
+## 📨 Event Streaming
+
 - Apache Kafka
+
+## 🗄️ Database
+
 - PostgreSQL
+
+## ☸️ Infrastructure
+
 - Docker
+- Kubernetes
+
+## 🧪 Testing
+
 - JUnit 5
 - Mockito
-- Maven
 
+## 🛠️ Build Tools
+
+- Maven
 
 ---
 
@@ -222,6 +238,46 @@ and sends corresponding notifications.
 ## 🏗️ Architecture Diagram
 
 <img src="screenshots/architecture.png" alt="ESN Events Platform architecture diagram" align="center" width="900">
+
+---
+
+## ☸️ Kubernetes Deployment
+
+<img src="screenshots/kubernetes-pods.png"
+alt="Kubernetes deployment"
+align="center"
+width="900">
+
+The deployment includes:
+
+- Event Service
+- Ticket Service
+- Payment Service
+- PostgreSQL
+- Apache Kafka (KRaft)
+
+The services communicate internally through Kubernetes Services and ConfigMaps.
+
+---
+
+## 📨 Event-Driven Workflow (Apache Kafka)
+
+<img src="screenshots/kafka-workflow.png"
+alt="Kafka eventrocessing using Apache Kafka.>
+
+The screenshot presents the complete workflow:
+
+1. Ticket Service publishes `TicketCreatedEvent`
+2. Payment Service consumes the event
+3. Payment result is published as:
+    - `PaymentSuccessEvent`
+    - `PaymentFailedEvent`
+4. Ticket Service consumes the payment result
+5. Ticket status is automatically updated:
+    - `CONFIRMED`
+    - `CANCELLED`
+
+This demonstrates an event-driven architecture where services communicate asynchronously without direct REST calls.
 
 ---
 
@@ -300,15 +356,22 @@ notification-service
 
 # <a name="run"></a> 🚀 How to Run
 
-## 1. Clone Repository
+The project supports two deployment options:
+
+- Docker Compose (local development)
+- Kubernetes (recommended)
+
+---
+
+## 🐳 Option 1 - Docker Compose
+
+### 1. Clone Repository
 
 ```bash
 git clone https://github.com/patryk47853/ESN-Events-Platform
 ```
 
----
-
-## 2. Start Infrastructure
+### 2. Start Infrastructure
 
 ```bash
 docker-compose up -d
@@ -318,12 +381,10 @@ This will start:
 
 ```text
 PostgreSQL
-Kafka
+Apache Kafka
 ```
 
----
-
-## 3. Run Microservices
+### 3. Run Microservices
 
 Start each service separately:
 
@@ -342,7 +403,57 @@ notification-service
 
 ---
 
-## 4. Service Ports
+## ☸️ Option 2 - Kubernetes Deployment (Recommended)
+
+### Build Docker Images
+
+```bash
+mvn clean package
+```
+
+```bash
+docker build -t esn-event-service:0.1 event-service
+docker build -t esn-ticket-service:0.1 ticket-service
+docker build -t esn-payment-service:0.1 payment-service
+docker build -t esn-notification-service:0.1 notification-service
+```
+
+### Deploy Infrastructure
+
+```bash
+kubectl apply -f k8s/postgres
+kubectl apply -f k8s/kafka
+```
+
+### Deploy Microservices
+
+```bash
+kubectl apply -f k8s/event-service
+kubectl apply -f k8s/ticket-service
+kubectl apply -f k8s/payment-service
+kubectl apply -f k8s/notification-service
+```
+
+### Verify Deployment
+
+```bash
+kubectl get pods -n esn-events
+```
+
+Expected result:
+
+```text
+event-service         Running
+ticket-service        Running
+payment-service       Running
+notification-service  Running
+postgres              Running
+kafka                 Running
+```
+
+---
+
+## Service Ports
 
 | Service | Port |
 |----------|----------|
@@ -353,15 +464,52 @@ notification-service
 
 ---
 
-## 5. Business Flow
+## Example Event-Driven Workflow
+
+```text
+Client
+  │
+  ▼
+Ticket Service
+  │
+  ▼
+TicketCreatedEvent
+  │
+  ▼
+Apache Kafka
+  │
+  ▼
+Payment Service
+  │
+  ├── PaymentSuccessEvent
+  │
+  └── PaymentFailedEvent
+         │
+         ▼
+Apache Kafka
+         │
+         ▼
+Ticket Service
+         │
+         ▼
+CONFIRMED / CANCELLED
+```
+
+Business flow:
 
 1. Create an event
-2. Client buys the ticket
+2. Create a ticket reservation
 3. Ticket status becomes `PENDING`
-4. Payment Service receives Kafka event
-5. Ticket becomes `CONFIRMED`
-6. QR token is generated
-7. Ticket can be validated at event entrance
+4. `TicketCreatedEvent` is published to Kafka
+5. Payment Service processes the event
+6. Payment Service publishes:
+    - `PaymentSuccessEvent`
+    - `PaymentFailedEvent`
+7. Ticket Service updates ticket status:
+    - `CONFIRMED`
+    - `CANCELLED`
+8. Confirmed tickets receive unique ticket tokens
+9. Tickets can be validated during event entry
 
 ---
 
@@ -434,20 +582,21 @@ The project is developed incrementally, with each version introducing a specific
 
 ---
 
-## 🚧 Planned Improvements
-
 ### v0.6 - Kubernetes Deployment
 
-- [ ] Add basic Kubernetes namespace.
-- [ ] Add Deployment manifests for all microservices.
-- [ ] Add Service manifests for internal communication.
-- [ ] Add ConfigMaps for environment-specific configuration.
-- [ ] Externalise service URLs to support Kubernetes service discovery.
-
-> Basic Kubernetes manifests will be added to demonstrate how the microservices can be deployed in a container orchestration environment.  
-> The setup will include Deployments, Services and ConfigMaps.
+- Added Kubernetes namespace
+- Added Deployments for all microservices
+- Added Services for internal communication
+- Added ConfigMaps
+- Added Kafka deployment in KRaft mode
+- Added PostgreSQL deployment
+- Configured readiness and liveness probes
+- Added service discovery using Kubernetes DNS
+- Externalised configuration using environment variables
 
 ---
+
+## 🚧 Planned Improvements
 
 ### v0.7 - Security Layer
 
