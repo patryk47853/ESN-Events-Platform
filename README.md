@@ -263,7 +263,9 @@ The services communicate internally through Kubernetes Services and ConfigMaps.
 ## 📨 Event-Driven Workflow (Apache Kafka)
 
 <img src="screenshots/kafka-workflow.png"
-alt="Kafka eventrocessing using Apache Kafka.>
+alt="Kafka eventrocessing using Apache Kafka
+align="center"
+width="900">
 
 The screenshot presents the complete workflow:
 
