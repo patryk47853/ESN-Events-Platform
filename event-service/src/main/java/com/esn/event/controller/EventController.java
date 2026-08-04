@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/api/events")
 @RequiredArgsConstructor
 public class EventController {
 
@@ -31,6 +31,18 @@ public class EventController {
     @GetMapping("/{id}")
     public Event getEventById(@PathVariable Long id) {
         return eventService.getEventById(id);
+    }
+
+    @PutMapping("/{id}/reserve")
+    public ResponseEntity<Void> reserveSeat(@PathVariable Long id) {
+        eventService.reserveSeat(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/release")
+    public ResponseEntity<Void> releaseSeat(@PathVariable Long id) {
+        eventService.releaseSeat(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/finances")
