@@ -34,9 +34,15 @@ The main goal of this project was to gain hands-on experience with:
 - Microservices architecture
 - Event-driven communication
 - Apache Kafka
+- Kubernetes deployments
+- JWT-based authentication and role-based authorisation
+- REST API design
+- Integration testing with Testcontainers
 - Business workflow modelling
 
-Communication between services is performed asynchronously using Kafka, allowing services to remain loosely coupled and independently deployable.
+The platform demonstrates both synchronous REST communication and asynchronous event-driven communication through Apache Kafka.
+
+All application and infrastructure components can be deployed to Kubernetes using Deployments, Services, ConfigMaps and Secrets. Authentication is handled by a dedicated Auth Service that issues signed JWT access tokens.
 
 ---
 
@@ -71,22 +77,32 @@ Communication between services is performed asynchronously using Kafka, allowing
 - Payment success notifications
 - Event-driven notification delivery
 
+### 🔐 Authentication and Authorisation
+
+- Dedicated Auth Service
+- User registration and login
+- Password hashing with BCrypt
+- Signed JWT access tokens
+- Stateless Bearer token authentication
+- Role-based access control
+- Support for `USER`, `ORGANIZER` and `ADMIN` roles
+- Protected Event Service and Ticket Service endpoints
+- Kubernetes Secrets for JWT and database credentials
+
 ---
 
 # <a name="architecture"></a> 🏗️ Architecture
 
-The platform consists of four independent Spring Boot microservices:
+The platform consists of five independent Spring Boot microservices:
 
 | Service | Responsibility |
-|----------|----------|
-| Event Service | Event management and financial reporting |
-| Ticket Service | Ticket lifecycle management |
-| Payment Service | Payment processing workflow |
-| Notification Service | Sending participant notifications |
+|----------|----------------|
+| Auth Service | User registration, authentication, JWT generation and role management |
+| Event Service | Event management, seat availability and financial reporting |
+| Ticket Service | Ticket lifecycle management, reservation and validation |
+| Payment Service | Asynchronous payment processing workflow |
+| Notification Service | Sending simulated participant notifications |
 
----
-
-# <a name="workflow"></a> 🎯 Business Workflow
 
 The following workflow demonstrates the complete ticket lifecycle:
 
@@ -152,6 +168,8 @@ This prevents seats from being blocked indefinitely.
 - Spring Boot
 - Spring Data JPA
 - Hibernate
+- Spring Security 
+- OAuth2
 
 ## 📨 Event Streaming
 
@@ -170,6 +188,9 @@ This prevents seats from being blocked indefinitely.
 
 - JUnit 5
 - Mockito
+- Testcontainers
+- PostgreSQL integration test
+- Automated Bash smoke testing
 
 ## 🛠️ Build Tools
 
@@ -179,25 +200,37 @@ This prevents seats from being blocked indefinitely.
 
 # <a name="endpoints"></a> 📡 API Endpoints
 
+## Auth Service
+
+| Method | Endpoint | Access | Description |
+|----------|----------|----------|----------|
+| POST | `/auth/register` | Public | Register a new user with the `USER` role |
+| POST | `/auth/login` | Public | Authenticate and receive a signed JWT access token |
+| GET | `/auth/me` | Authenticated | Get information about the authenticated user |
+
+---
+
 ## Event Service
 
-| Method | Endpoint | Description |
-|----------|----------|----------|
-| POST | `/events` | Create event |
-| GET | `/events` | Get all events |
-| GET | `/events/{id}` | Get event by ID |
-| GET | `/events/{id}/finances` | Financial report |
-| PATCH | `/events/{id}/price` | Update event price |
+| Method | Endpoint | Access | Description |
+|----------|----------|----------|----------|
+| POST | `/api/events` | `ORGANIZER`, `ADMIN` | Create an event |
+| GET | `/api/events` | Public | Get all events |
+| GET | `/api/events/{id}` | Public | Get event by ID |
+| GET | `/api/events/{id}/finances` | Authenticated | Generate a financial report |
+| PATCH | `/api/events/{id}/price` | `ORGANIZER`, `ADMIN` | Update event price |
+| PUT | `/api/events/{id}/reserve` | Internal | Reserve a seat |
+| PUT | `/api/events/{id}/release` | Internal | Release a seat |
 
 ---
 
 ## Ticket Service
 
-| Method | Endpoint | Description |
-|----------|----------|----------|
-| POST | `/tickets` | Create ticket |
-| GET | `/tickets/by-event/{eventId}` | Get tickets by event |
-| PUT | `/tickets/validate` | Validate ticket |
+| Method | Endpoint | Access | Description |
+|----------|----------|----------|----------|
+| POST | `/tickets` | Authenticated | Create a ticket reservation |
+| GET | `/tickets/by-event/{eventId}` | `ORGANIZER`, `ADMIN` | Get tickets assigned to an event |
+| PUT | `/tickets/validate` | `ORGANIZER`, `ADMIN` | Validate a ticket token |
 
 ---
 
@@ -250,11 +283,12 @@ width="900">
 
 The deployment includes:
 
+- Auth Service
 - Event Service
 - Ticket Service
 - Payment Service
 - PostgreSQL
-- Apache Kafka (KRaft)
+- Apache Kafka 
 
 The services communicate internally through Kubernetes Services and ConfigMaps.
 
@@ -303,9 +337,11 @@ This demonstrates an event-driven architecture where services communicate asynch
 
 # <a name="testing"></a> ✅ Testing
 
-The project contains unit tests written with JUnit 5 & Mockito
+The project includes unit, integration and automated smoke tests.
 
-Current test coverage includes:
+## Unit Testing
+
+Unit tests are written with JUnit 5 and Mockito.
 
 ### Event Service
 
@@ -331,6 +367,81 @@ Current test coverage includes:
 
 - Payment event processing
 - Kafka producer verification
+
+### Auth Service
+
+- User registration
+- Email normalisation
+- Duplicate email rejection
+- Password encoding with BCrypt
+- User authentication
+- Invalid credentials handling
+- JWT generation and validation
+- Modified JWT rejection
+
+## Integration Testing
+
+Auth Service includes integration tests using:
+
+- Spring Boot Test
+- MockMvc
+- Spring Security
+- Testcontainers
+- PostgreSQL
+
+The integration tests start a real PostgreSQL container and verify the complete authentication flow:
+
+```text
+User Registration
+        |
+        v
+BCrypt Password Hashing
+        |
+        v
+JWT Generation
+        |
+        v
+Bearer Token Authentication
+        |
+        v
+Protected Endpoint Access
+```
+
+The integration test suite also verifies:
+
+- Requests without a token return `401 Unauthorized`
+- Invalid JWT tokens are rejected
+- Incorrect login credentials return `401 Unauthorized`
+- Authenticated users can access protected endpoints
+- Registered users receive the `USER` role
+
+## Automated Kubernetes Smoke Test
+
+The project includes a Bash-based end-to-end smoke test for the local Kubernetes deployment.
+
+The script verifies:
+
+- Kubernetes deployment availability
+- Service health endpoints
+- Auth Service registration and login
+- JWT Bearer authentication
+- `USER` role restrictions
+- `ORGANIZER` role permissions
+- Event creation
+- Ticket creation
+- REST communication between microservices
+- Asynchronous Kafka payment processing
+- Final ticket state after payment processing
+
+Run the smoke test from the project root:
+
+```bash
+./scripts/smoke-test.sh
+```
+
+The script provides a clear pass/fail result and automatically manages the required Kubernetes port-forward processes.
+
+> **Note:** This script was developed with AI assistance, manually reviewed and adapted to the project. It was added as a learning exercise to automate verification of the Kubernetes deployment and the core event-driven workflow.
 
 ---
 
@@ -360,83 +471,146 @@ notification-service
 
 The project supports two deployment options:
 
-- Docker Compose (local development)
-- Kubernetes (recommended)
+- Docker Compose for local development
+- Kubernetes for running the complete platform
 
 ---
 
 ## 🐳 Option 1 - Docker Compose
 
-### 1. Clone Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/patryk47853/ESN-Events-Platform
+cd ESN-Events-Platform
 ```
 
-### 2. Start Infrastructure
+### 2. Start the Infrastructure
 
 ```bash
 docker-compose up -d
 ```
 
-This will start:
+This starts:
 
 ```text
 PostgreSQL
 Apache Kafka
 ```
 
-### 3. Run Microservices
+### 3. Run the Microservices
 
-Start each service separately:
-
-```bash
-mvn spring-boot:run
-```
-
-for:
-
-```text
-event-service
-ticket-service
-payment-service
-notification-service
-```
-
----
-
-## ☸️ Option 2 - Kubernetes Deployment (Recommended)
-
-### Build Docker Images
+Build the complete project from the project root:
 
 ```bash
 mvn clean package
 ```
 
+Start each service separately:
+
 ```bash
-docker build -t esn-event-service:0.1 event-service
-docker build -t esn-ticket-service:0.1 ticket-service
+cd auth-service
+mvn spring-boot:run
+```
+
+```bash
+cd event-service
+mvn spring-boot:run
+```
+
+```bash
+cd ticket-service
+mvn spring-boot:run
+```
+
+```bash
+cd payment-service
+mvn spring-boot:run
+```
+
+```bash
+cd notification-service
+mvn spring-boot:run
+```
+
+---
+
+## ☸️ Option 2 - Kubernetes Deployment
+
+### 1. Build the Project
+
+Run the following command from the project root:
+
+```bash
+mvn clean package
+```
+
+### 2. Build the Docker Images
+
+```bash
+docker build -t esn-auth-service:0.1 auth-service
+docker build -t esn-event-service:0.2 event-service
+docker build -t esn-ticket-service:0.2 ticket-service
 docker build -t esn-payment-service:0.1 payment-service
 docker build -t esn-notification-service:0.1 notification-service
 ```
 
-### Deploy Infrastructure
+### 3. Create the Kubernetes Namespace
+
+```bash
+kubectl apply -f k8s/namespace.yaml
+```
+
+### 4. Create the Required Kubernetes Secrets
+
+Generate a JWT signing key:
+
+```bash
+JWT_SECRET=$(openssl rand -base64 32)
+```
+
+Create the Auth Service Secret:
+
+```bash
+kubectl create secret generic auth-service-secret \
+  --namespace esn-events \
+  --from-literal=JWT_SECRET="$JWT_SECRET" \
+  --from-literal=SPRING_DATASOURCE_PASSWORD=postgres
+```
+
+Create the shared JWT Secret used by Event Service and Ticket Service:
+
+```bash
+kubectl create secret generic jwt-shared-secret \
+  --namespace esn-events \
+  --from-literal=JWT_SECRET="$JWT_SECRET"
+```
+
+> Kubernetes Secrets containing credentials and JWT signing keys are not committed to the repository.
+
+### 5. Deploy the Infrastructure
 
 ```bash
 kubectl apply -f k8s/postgres
 kubectl apply -f k8s/kafka
 ```
 
-### Deploy Microservices
+### 6. Deploy the Microservices
 
 ```bash
+kubectl apply -f k8s/auth-service
 kubectl apply -f k8s/event-service
 kubectl apply -f k8s/ticket-service
 kubectl apply -f k8s/payment-service
+```
+
+If Notification Service is included in the current Kubernetes setup:
+
+```bash
 kubectl apply -f k8s/notification-service
 ```
 
-### Verify Deployment
+### 7. Verify the Deployment
 
 ```bash
 kubectl get pods -n esn-events
@@ -445,12 +619,26 @@ kubectl get pods -n esn-events
 Expected result:
 
 ```text
-event-service         Running
-ticket-service        Running
-payment-service       Running
-notification-service  Running
-postgres              Running
-kafka                 Running
+auth-service          1/1   Running
+event-service         1/1   Running
+ticket-service        1/1   Running
+payment-service       1/1   Running
+postgres              1/1   Running
+kafka                 1/1   Running
+```
+
+If Notification Service is deployed, the following pod should also be available:
+
+```text
+notification-service  1/1   Running
+```
+
+### 8. Run the Automated Smoke Test
+
+The smoke test verifies authentication, authorisation, REST communication and Kafka-based payment processing in the deployed Kubernetes environment.
+
+```bash
+./scripts/smoke-test.sh
 ```
 
 ---
@@ -458,11 +646,12 @@ kafka                 Running
 ## Service Ports
 
 | Service | Port |
-|----------|----------|
+|----------|------|
 | Event Service | 8081 |
 | Ticket Service | 8082 |
 | Notification Service | 8083 |
 | Payment Service | 8084 |
+| Auth Service | 8085 |
 
 ---
 
@@ -583,51 +772,98 @@ The project is developed incrementally, with each version introducing a specific
 - Added README sections describing architecture, workflow and endpoints.
 
 ---
-
 ### v0.6 - Kubernetes Deployment
 
-- Added Kubernetes namespace
-- Added Deployments for all microservices
-- Added Services for internal communication
-- Added ConfigMaps
-- Added Kafka deployment in KRaft mode
-- Added PostgreSQL deployment
-- Configured readiness and liveness probes
-- Added service discovery using Kubernetes DNS
-- Externalised configuration using environment variables
+- Added a dedicated Kubernetes namespace.
+- Added Deployments for the application services.
+- Added Kubernetes Services for internal communication.
+- Added ConfigMaps for runtime configuration.
+- Added Kubernetes Secrets for sensitive configuration.
+- Deployed Apache Kafka in KRaft mode.
+- Deployed PostgreSQL.
+- Configured readiness and liveness probes.
+- Added resource requests and limits.
+- Added service discovery using Kubernetes DNS.
+- Externalised application configuration using environment variables.
+
+---
+
+### v0.7 - Security Layer
+
+- Added a dedicated Auth Service.
+- Added user registration and login endpoints.
+- Added BCrypt password hashing.
+- Added signed JWT access tokens.
+- Added stateless Bearer token authentication.
+- Added `USER`, `ORGANIZER` and `ADMIN` roles.
+- Added role-based access control.
+- Protected selected Event Service and Ticket Service endpoints.
+- Added Kubernetes Secrets for JWT signing keys and database credentials.
+- Added unit tests for authentication and JWT logic.
+- Added integration tests using MockMvc, Testcontainers and PostgreSQL.
+- Deployed Auth Service to Kubernetes.
+- Added an automated Kubernetes smoke test covering authentication, authorisation, REST communication and Kafka processing.
 
 ---
 
 ## 🚧 Planned Improvements
 
-### v0.7 - Security Layer
-
-- [ ] Add JWT authentication and authorization.
-- [ ] Protect selected endpoints based on user roles.
-- [ ] Introduce role-based access for organisers/admin users.
-
----
-
 ### v0.8 - API Gateway
 
-- [ ] Add API Gateway as a single entry point for external clients.
+- [ ] Add Spring Cloud Gateway as a single entry point for external clients.
 - [ ] Route requests to internal microservices.
-- [ ] Prepare the project for easier frontend integration.
+- [ ] Forward JWT Bearer tokens to protected services.
+- [ ] Replace separate service access with a single external endpoint.
+- [ ] Simplify local and Kubernetes access to the platform.
+- [ ] Prepare the backend for frontend integration.
 
 ---
 
-### v0.9 - Notification Improvements
+### v0.9 - Notification Service
 
-- [ ] Replace simulated notification logs with real SMTP email delivery.
-- [ ] Add configurable email templates.
-- [ ] Improve notification error handling.
+- [ ] Review and complete the existing Notification Service implementation.
+- [ ] Consume ticket creation, payment success and ticket cancellation events.
+- [ ] Add notification templates for supported event types.
+- [ ] Replace simulated notification logs with email delivery.
+- [ ] Add SMTP configuration through environment variables.
+- [ ] Add error handling for failed notification delivery.
+- [ ] Add unit tests for notification event processing.
+- [ ] Add integration tests for Kafka-based notification workflows.
+- [ ] Add Docker and Kubernetes configuration for Notification Service.
+- [ ] Deploy Notification Service to Kubernetes.
+- [ ] Include Notification Service in the automated smoke test.
 
 ---
 
-### v1.0 - Production-Ready Improvements
+### v1.0 - Reliability, Observability and Delivery
 
-- [ ] Add monitoring and observability.
-- [ ] Add CI/CD pipeline.
-- [ ] Add integration tests.
-- [ ] Improve Docker and Kubernetes documentation.
-- [ ] Prepare final README screenshots and deployment guide.
+- [ ] Add Kafka retry handling.
+- [ ] Add Dead Letter Topics for events that cannot be processed.
+- [ ] Improve idempotency of Kafka consumers.
+- [ ] Add monitoring and application metrics.
+- [ ] Add centralised logging.
+- [ ] Add distributed tracing between services.
+- [ ] Add CI/CD pipelines for automated builds and tests.
+- [ ] Run unit and integration tests in the CI pipeline.
+- [ ] Build and publish Docker images through the CI/CD pipeline.
+- [ ] Replace development database initialisation with Flyway migrations.
+- [ ] Improve service-to-service authentication.
+- [ ] Add Kubernetes NetworkPolicies.
+- [ ] Add additional integration tests for cross-service workflows.
+
+---
+
+### v1.1 - Basic Frontend
+
+- [ ] Create a basic web interface for the platform.
+- [ ] Add user registration and login views.
+- [ ] Store and send JWT access tokens with protected requests.
+- [ ] Add an event listing view.
+- [ ] Add an event details view.
+- [ ] Add ticket reservation functionality.
+- [ ] Add a view displaying the current user's tickets.
+- [ ] Add organiser functionality for creating and managing events.
+- [ ] Integrate the frontend with the API Gateway.
+- [ ] Add basic error handling and loading states.
+- [ ] Containerise the frontend application.
+- [ ] Deploy the frontend to Kubernetes.
