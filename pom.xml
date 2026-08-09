@@ -17,6 +17,7 @@
         <module>payment-service</module>
         <module>common-events</module>
         <module>auth-service</module>
+        <module>api-gateway</module>
     </modules>
 
     <properties>
