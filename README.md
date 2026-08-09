@@ -810,60 +810,33 @@ The project is developed incrementally, with each version introducing a specific
 
 ### v0.8 - API Gateway
 
-- [ ] Add Spring Cloud Gateway as a single entry point for external clients.
-- [ ] Route requests to internal microservices.
+- [ ] Add Spring Cloud Gateway as a single entry point.
+- [ ] Route requests to Auth, Event and Ticket Services.
 - [ ] Forward JWT Bearer tokens to protected services.
-- [ ] Replace separate service access with a single external endpoint.
-- [ ] Simplify local and Kubernetes access to the platform.
-- [ ] Prepare the backend for frontend integration.
+- [ ] Expose the platform through one local endpoint.
+- [ ] Configure CORS for the Angular frontend.
 
 ---
 
-### v0.9 - Notification Service
+### v0.9 - Angular Frontend MVP
 
-- [ ] Review and complete the existing Notification Service implementation.
-- [ ] Consume ticket creation, payment success and ticket cancellation events.
-- [ ] Add notification templates for supported event types.
-- [ ] Replace simulated notification logs with email delivery.
-- [ ] Add SMTP configuration through environment variables.
-- [ ] Add error handling for failed notification delivery.
-- [ ] Add unit tests for notification event processing.
-- [ ] Add integration tests for Kafka-based notification workflows.
-- [ ] Add Docker and Kubernetes configuration for Notification Service.
-- [ ] Deploy Notification Service to Kubernetes.
-- [ ] Include Notification Service in the automated smoke test.
-
----
-
-### v1.0 - Reliability, Observability and Delivery
-
-- [ ] Add Kafka retry handling.
-- [ ] Add Dead Letter Topics for events that cannot be processed.
-- [ ] Improve idempotency of Kafka consumers.
-- [ ] Add monitoring and application metrics.
-- [ ] Add centralised logging.
-- [ ] Add distributed tracing between services.
-- [ ] Add CI/CD pipelines for automated builds and tests.
-- [ ] Run unit and integration tests in the CI pipeline.
-- [ ] Build and publish Docker images through the CI/CD pipeline.
-- [ ] Replace development database initialisation with Flyway migrations.
-- [ ] Improve service-to-service authentication.
-- [ ] Add Kubernetes NetworkPolicies.
-- [ ] Add additional integration tests for cross-service workflows.
+- [ ] Create an Angular application using standalone components.
+- [ ] Add routing and a shared application layout.
+- [ ] Add registration and login forms.
+- [ ] Add JWT storage and an HTTP authentication interceptor.
+- [ ] Add protected routes with authentication and role guards.
+- [ ] Add event listing and event details views.
+- [ ] Add ticket reservation and user ticket views.
+- [ ] Add organiser functionality for creating events.
+- [ ] Integrate the frontend with API Gateway.
+- [ ] Containerise and deploy the frontend to Kubernetes.
 
 ---
 
-### v1.1 - Basic Frontend
+### v1.0 - Notification and Reliability Improvements
 
-- [ ] Create a basic web interface for the platform.
-- [ ] Add user registration and login views.
-- [ ] Store and send JWT access tokens with protected requests.
-- [ ] Add an event listing view.
-- [ ] Add an event details view.
-- [ ] Add ticket reservation functionality.
-- [ ] Add a view displaying the current user's tickets.
-- [ ] Add organiser functionality for creating and managing events.
-- [ ] Integrate the frontend with the API Gateway.
-- [ ] Add basic error handling and loading states.
-- [ ] Containerise the frontend application.
-- [ ] Deploy the frontend to Kubernetes.
+- [ ] Complete and deploy Notification Service.
+- [ ] Add Kafka retry and Dead Letter Topic handling.
+- [ ] Improve consumer idempotency.
+- [ ] Add monitoring, metrics and centralised logging.
+- [ ] Add CI/CD pipelines.
