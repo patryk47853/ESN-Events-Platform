@@ -25,3 +25,6 @@ server:
 
 event-service:
   url: ${EVENT_SERVICE_URL:http://localhost:8081/api/events}
+
+jwt:
+  secret: ${JWT_SECRET:RVMtRVZFTlRTLUpXVC1ERVYtU0VDUkVULUtFWS1GT1ItSFMtMjU2LTAx}
