@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: esn-events
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: payment-service
+
+  template:
+    metadata:
+      labels:
+        app: payment-service
+
+    spec:
+      containers:
+        - name: payment-service
+          image: esn-payment-service:0.1
+
+          imagePullPolicy: IfNotPresent
+
+          envFrom:
+            - configMapRef:
+                name: payment-service-config

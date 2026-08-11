@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-service
+  namespace: esn-events
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: ticket-service
+
+  template:
+    metadata:
+      labels:
+        app: ticket-service
+
+    spec:
+      containers:
+        - name: ticket-service
+          image: esn-ticket-service:0.2
+
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8082
+
+          envFrom:
+            - configMapRef:
+                name: ticket-service-config
+
+            - secretRef:
+                name: ticket-service-secret
+
+            - secretRef:
+                name: jwt-shared-secret
