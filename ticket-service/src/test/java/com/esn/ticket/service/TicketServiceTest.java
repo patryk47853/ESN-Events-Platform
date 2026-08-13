@@ -1,5 +1,6 @@
 package com.esn.ticket.service;
 
+import com.esn.common.event.TicketCreatedEvent;
 import com.esn.ticket.config.EventClient;
 import com.esn.ticket.dto.CreateTicketRequest;
 import com.esn.ticket.dto.TicketValidationResponse;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,10 +38,10 @@ class TicketServiceTest {
 
     @Test
     void shouldCreateTicketSuccessfully() {
-
         CreateTicketRequest request = new CreateTicketRequest();
         request.setEventId(1L);
-        request.setUserId(10L);
+
+        Long userId = 10L;
 
         when(eventClient.eventExists(1L))
                 .thenReturn(true);
@@ -51,31 +53,35 @@ class TicketServiceTest {
                     return ticket;
                 });
 
-        Ticket ticket = ticketService.createTicket(request);
+        Ticket ticket = ticketService.createTicket(request, userId);
 
         assertNotNull(ticket);
+        assertEquals(1L, ticket.getEventId());
+        assertEquals(10L, ticket.getUserId());
         assertEquals(TicketStatus.PENDING, ticket.getStatus());
 
         verify(eventClient).reserveSeat(1L);
-        verify(ticketProducer).sendTicketCreated(any());
+        verify(ticketProducer).sendTicketCreated(any(TicketCreatedEvent.class));
     }
 
     @Test
     void shouldThrowWhenEventDoesNotExist() {
-
         CreateTicketRequest request = new CreateTicketRequest();
         request.setEventId(999L);
-        request.setUserId(10L);
+
+        Long userId = 10L;
 
         when(eventClient.eventExists(999L))
                 .thenReturn(false);
 
         assertThrows(
                 EventNotFoundException.class,
-                () -> ticketService.createTicket(request)
+                () -> ticketService.createTicket(request, userId)
         );
 
         verify(ticketRepository, never()).save(any());
+        verify(eventClient, never()).reserveSeat(anyLong());
+        verify(ticketProducer, never()).sendTicketCreated(any());
     }
 
     @Test
@@ -268,5 +274,29 @@ class TicketServiceTest {
                 "INVALID",
                 response.getStatus()
         );
+    }
+
+    @Test
+    void shouldReturnTicketsForAuthenticatedUser() {
+        Long userId = 10L;
+
+        Ticket ticket = Ticket.builder()
+                .id(1L)
+                .eventId(1L)
+                .userId(userId)
+                .status(TicketStatus.CONFIRMED)
+                .build();
+
+        when(ticketRepository.findAllByUserIdOrderByCreatedAtDesc(userId))
+                .thenReturn(List.of(ticket));
+
+        List<Ticket> tickets =
+                ticketService.getTicketsForUser(userId);
+
+        assertEquals(1, tickets.size());
+        assertEquals(userId, tickets.getFirst().getUserId());
+
+        verify(ticketRepository)
+                .findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 }
