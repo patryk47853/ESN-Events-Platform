@@ -11,10 +11,10 @@ import com.esn.ticket.exception.EventNotFoundException;
 import com.esn.ticket.exception.TicketNotFoundException;
 import com.esn.ticket.kafka.TicketProducer;
 import com.esn.ticket.repository.TicketRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,8 +28,7 @@ public class TicketService {
     private final TicketProducer ticketProducer;
 
     @Transactional
-    public Ticket createTicket(CreateTicketRequest request) {
-
+    public Ticket createTicket(CreateTicketRequest request, Long userId) {
         if (!eventClient.eventExists(request.getEventId())) {
             throw new EventNotFoundException(request.getEventId());
         }
@@ -37,7 +36,7 @@ public class TicketService {
         Ticket ticket = ticketRepository.save(
                 Ticket.builder()
                         .eventId(request.getEventId())
-                        .userId(request.getUserId())
+                        .userId(userId)
                         .status(TicketStatus.PENDING)
                         .build()
         );
@@ -143,5 +142,10 @@ public class TicketService {
                         .status("INVALID")
                         .message("Ticket token does not exist!")
                         .build());
+    }
+
+    @Transactional
+    public List<Ticket> getTicketsForUser(Long userId) {
+        return ticketRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 }
