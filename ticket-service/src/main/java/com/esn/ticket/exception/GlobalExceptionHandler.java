@@ -1,6 +1,7 @@
 package com.esn.ticket.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -33,5 +34,17 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 LocalDateTime.now()
         );
+    }
+
+    @ExceptionHandler(TicketAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleTicketAlreadyExists(TicketAlreadyExistsException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errorResponse);
     }
 }
