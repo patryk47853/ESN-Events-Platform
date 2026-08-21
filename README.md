@@ -265,7 +265,6 @@ ticket-cancelled-topic
 and sends corresponding notifications.
 
 ---
-
 # <a name="screenshots"></a> 📸 Screenshots
 
 ## 🏗️ Architecture Diagram
@@ -274,64 +273,37 @@ and sends corresponding notifications.
 
 ---
 
-## ☸️ Kubernetes Deployment
+## 🏠 Main Page
 
-<img src="screenshots/kubernetes-pods.png"
-alt="Kubernetes deployment"
-align="center"
-width="900">
-
-The deployment includes:
-
-- Auth Service
-- Event Service
-- Ticket Service
-- Payment Service
-- PostgreSQL
-- Apache Kafka 
-
-The services communicate internally through Kubernetes Services and ConfigMaps.
+<img src="screenshots/main_page.png" alt="Main Page" align="center" width="900">
 
 ---
 
-## 📨 Event-Driven Workflow (Apache Kafka)
+## 🎟️ Event Details
 
-<img src="screenshots/kafka-workflow.png"
-alt="Kafka event processing using Apache Kafka"
-align="center"
-width="900">
-
-The screenshot presents the complete workflow:
-
-1. Ticket Service publishes `TicketCreatedEvent`
-2. Payment Service consumes the event
-3. Payment result is published as:
-    - `PaymentSuccessEvent`
-    - `PaymentFailedEvent`
-4. Ticket Service consumes the payment result
-5. Ticket status is automatically updated:
-    - `CONFIRMED`
-    - `CANCELLED`
-
-This demonstrates an event-driven architecture where services communicate asynchronously without direct REST calls.
+<img src="screenshots/event_details.png" alt="Event Details" align="center" width="900">
 
 ---
 
-## 🎯 Ticket Lifecycle Workflow
+## 📊 Organizer Panel
 
-<img src="screenshots/ticket-lifecycle-workflow.png" alt="Ticket lifecycle workflow diagram" align="center" width="300">
-
----
-
-## 📡 Swagger - Event Service
-
-<img src="screenshots/swagger-event-service.png" alt="Swagger documentation for Event Service" align="center" width="900">
+<img src="screenshots/organizer_panel.png" alt="Organizer Panel" align="center" width="900">
 
 ---
 
-## 🎫 Swagger - Ticket Service
+## 🎟️ Ticket Status (Confirmed & Cancelled)
 
-<img src="screenshots/swagger-ticket-service.png" alt="Swagger documentation for Ticket Service" align="center" width="900">
+<img src="screenshots/confirmed_ticket.png" alt="Confirmed Ticket" align="center" width="900">
+
+<br>
+
+<img src="screenshots/cancelled_ticket.png" alt="Cancelled Ticket" align="center" width="900">
+
+---
+
+## 📈 Grafana Monitoring
+
+<img src="screenshots/grafana.png" alt="Grafana Monitoring Dashboard" align="center" width="900">
 
 ---
 
