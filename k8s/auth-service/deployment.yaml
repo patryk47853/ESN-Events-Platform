@@ -33,6 +33,9 @@ spec:
             - secretRef:
                 name: auth-service-secret
 
+            - secretRef:
+                name: jwt-shared-secret
+
           resources:
             requests:
               memory: "256Mi"
