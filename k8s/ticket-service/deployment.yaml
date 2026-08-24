@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: ticket-service
-          image: esn-ticket-service:0.2
+          image: esn-ticket-service:0.7
 
           imagePullPolicy: IfNotPresent
 
