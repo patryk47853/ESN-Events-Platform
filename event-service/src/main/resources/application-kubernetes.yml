@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: kubernetes
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/esn_events
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  sql:
+    init:
+      mode: always
