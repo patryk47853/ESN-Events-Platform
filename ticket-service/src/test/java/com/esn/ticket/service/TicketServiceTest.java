@@ -341,4 +341,36 @@ class TicketServiceTest {
         verify(ticketMetrics).incrementReservationConflicts();
         verify(ticketMetrics, never()).incrementCreatedTickets();
     }
+
+    @Test
+    void shouldRejectDuplicateTicketWhenDatabaseConstraintIsViolated() {
+        CreateTicketRequest request = new CreateTicketRequest();
+        request.setEventId(1L);
+
+        Long userId = 10L;
+
+        when(eventClient.eventExists(1L))
+                .thenReturn(true);
+
+        when(ticketRepository.existsByEventIdAndUserIdAndStatusIn(
+                eq(1L),
+                eq(userId),
+                anyCollection()
+        )).thenReturn(false);
+
+        when(ticketRepository.saveAndFlush(any(Ticket.class)))
+                .thenThrow(new DataIntegrityViolationException(
+                        "Unique active ticket constraint violated"
+                ));
+
+        assertThrows(
+                TicketAlreadyExistsException.class,
+                () -> ticketService.createTicket(request, userId)
+        );
+
+        verify(eventClient, never()).reserveSeat(anyLong());
+        verify(ticketProducer, never()).sendTicketCreated(any());
+        verify(ticketMetrics).incrementReservationConflicts();
+        verify(ticketMetrics, never()).incrementCreatedTickets();
+    }
 }
