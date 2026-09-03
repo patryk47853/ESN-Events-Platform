@@ -8,11 +8,14 @@ import com.esn.ticket.dto.TicketValidationResponse;
 import com.esn.ticket.entity.Ticket;
 import com.esn.ticket.entity.TicketStatus;
 import com.esn.ticket.exception.EventNotFoundException;
+import com.esn.ticket.exception.TicketAlreadyExistsException;
 import com.esn.ticket.exception.TicketNotFoundException;
 import com.esn.ticket.kafka.TicketProducer;
+import com.esn.ticket.metrics.TicketMetrics;
 import com.esn.ticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final EventClient eventClient;
     private final TicketProducer ticketProducer;
+    private final TicketMetrics ticketMetrics;
 
     @Transactional
     public Ticket createTicket(CreateTicketRequest request, Long userId) {
@@ -33,13 +37,38 @@ public class TicketService {
             throw new EventNotFoundException(request.getEventId());
         }
 
-        Ticket ticket = ticketRepository.save(
-                Ticket.builder()
-                        .eventId(request.getEventId())
-                        .userId(userId)
-                        .status(TicketStatus.PENDING)
-                        .build()
-        );
+        boolean activeTicketExists =
+                ticketRepository.existsByEventIdAndUserIdAndStatusIn(
+                        request.getEventId(),
+                        userId,
+                        List.of(
+                                TicketStatus.PENDING,
+                                TicketStatus.CONFIRMED
+                        )
+                );
+
+        if (activeTicketExists) {
+            ticketMetrics.incrementReservationConflicts();
+
+            throw new TicketAlreadyExistsException(request.getEventId());
+        }
+
+        Ticket ticket;
+
+        try {
+            ticket = ticketRepository.saveAndFlush(
+                    Ticket.builder()
+                            .eventId(request.getEventId())
+                            .userId(userId)
+                            .status(TicketStatus.PENDING)
+                            .build()
+            );
+        } catch (DataIntegrityViolationException ex) {
+            ticketMetrics.incrementReservationConflicts();
+
+            throw new TicketAlreadyExistsException(request.getEventId());
+        }
+        ticketMetrics.incrementCreatedTickets();
 
         eventClient.reserveSeat(request.getEventId());
 
@@ -68,10 +97,11 @@ public class TicketService {
 
         ticket.setStatus(TicketStatus.CONFIRMED);
 
-        ticket.setStatus(TicketStatus.CONFIRMED);
         ticket.setTicketToken("ESN-QR-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
         ticketRepository.save(ticket);
+
+        ticketMetrics.incrementConfirmedTickets();
 
         log.info("Ticket with ID: [{}] confirmed", ticketId);
     }
@@ -98,6 +128,8 @@ public class TicketService {
         ticket.setStatus(TicketStatus.CANCELLED);
 
         eventClient.releaseSeat(ticket.getEventId());
+
+        ticketMetrics.incrementCancelledTickets();
 
         ticketProducer.sendTicketCancelled(
                 TicketCancelledEvent.builder()
