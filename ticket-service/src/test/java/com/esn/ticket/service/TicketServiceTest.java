@@ -7,13 +7,16 @@ import com.esn.ticket.dto.TicketValidationResponse;
 import com.esn.ticket.entity.Ticket;
 import com.esn.ticket.entity.TicketStatus;
 import com.esn.ticket.exception.EventNotFoundException;
+import com.esn.ticket.exception.TicketAlreadyExistsException;
 import com.esn.ticket.kafka.TicketProducer;
+import com.esn.ticket.metrics.TicketMetrics;
 import com.esn.ticket.repository.TicketRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +36,9 @@ class TicketServiceTest {
     @Mock
     private TicketProducer ticketProducer;
 
+    @Mock
+    private TicketMetrics ticketMetrics;
+
     @InjectMocks
     private TicketService ticketService;
 
@@ -46,7 +52,13 @@ class TicketServiceTest {
         when(eventClient.eventExists(1L))
                 .thenReturn(true);
 
-        when(ticketRepository.save(any(Ticket.class)))
+        when(ticketRepository.existsByEventIdAndUserIdAndStatusIn(
+                eq(1L),
+                eq(userId),
+                anyCollection()
+        )).thenReturn(false);
+
+        when(ticketRepository.saveAndFlush(any(Ticket.class)))
                 .thenAnswer(invocation -> {
                     Ticket ticket = invocation.getArgument(0);
                     ticket.setId(1L);
@@ -62,6 +74,8 @@ class TicketServiceTest {
 
         verify(eventClient).reserveSeat(1L);
         verify(ticketProducer).sendTicketCreated(any(TicketCreatedEvent.class));
+        verify(ticketMetrics).incrementCreatedTickets();
+        verify(ticketMetrics, never()).incrementReservationConflicts();
     }
 
     @Test
@@ -298,5 +312,33 @@ class TicketServiceTest {
 
         verify(ticketRepository)
                 .findAllByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    @Test
+    void shouldRejectDuplicateActiveTicket() {
+        CreateTicketRequest request = new CreateTicketRequest();
+        request.setEventId(1L);
+
+        Long userId = 10L;
+
+        when(eventClient.eventExists(1L))
+                .thenReturn(true);
+
+        when(ticketRepository.existsByEventIdAndUserIdAndStatusIn(
+                eq(1L),
+                eq(userId),
+                anyCollection()
+        )).thenReturn(true);
+
+        assertThrows(
+                TicketAlreadyExistsException.class,
+                () -> ticketService.createTicket(request, userId)
+        );
+
+        verify(ticketRepository, never()).save(any());
+        verify(eventClient, never()).reserveSeat(anyLong());
+        verify(ticketProducer, never()).sendTicketCreated(any());
+        verify(ticketMetrics).incrementReservationConflicts();
+        verify(ticketMetrics, never()).incrementCreatedTickets();
     }
 }
