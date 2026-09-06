@@ -8,7 +8,4 @@ public class CreateTicketRequest {
 
     @NotNull
     private Long eventId;
-
-    @NotNull
-    private Long userId;
 }
