@@ -18,6 +18,7 @@ public class CreateEventRequest {
     private String location;
 
     @NotNull
+    @Future
     private LocalDateTime date;
 
     @NotNull
